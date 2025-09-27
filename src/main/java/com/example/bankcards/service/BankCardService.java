@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 
-public interface CardService {
+public interface BankCardService {
     BankCardDTO save(CardCreateRequest request);
     BankCardDTO update(BankCardDTO BankcardDTO);
     BankCardDTO updateStatus(Long cardId, CardUpdateRequest request);

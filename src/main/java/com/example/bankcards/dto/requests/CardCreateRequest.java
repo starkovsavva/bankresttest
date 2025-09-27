@@ -3,7 +3,7 @@ package com.example.bankcards.dto.requests;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record CardCreateRequest(
         @NotBlank(message = "Card number is required")
@@ -14,7 +14,7 @@ public record CardCreateRequest(
         String cardHolderName,
 
         @NotNull(message = "Expiration date is required")
-        LocalDate expirationDate,
+        LocalDateTime expirationDate,
 
         Long targetUserId  // Optional: для админа, чтобы создать карту другому пользователю
 ) {}

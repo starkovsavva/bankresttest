@@ -1,6 +1,8 @@
 package com.example.bankcards.entity;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "bank_cards")
+@RequiredArgsConstructor
+@Builder
 public class BankCard implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,7 +33,7 @@ public class BankCard implements Serializable {
     private String cardHolderName;
 
     @Column(nullable = false)
-    private LocalDate expirationDate;
+    private LocalDateTime expirationDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

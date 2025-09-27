@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO for {@link com.example.bankcards.entity.BankCard}
@@ -24,7 +24,7 @@ public record BankCardDTO(
         String cardHolderName,
 
         @NotNull(message = "Expiration date is required")
-        LocalDate expirationDate,
+        LocalDateTime expirationDate,
 
         @NotNull(message = "Status is required")
         BankCardStatus status,
@@ -40,7 +40,7 @@ public record BankCardDTO(
 ) {
     // Статический factory метод для создания с маскированным номером
     public static BankCardDTO of(Long id, String cardNumber, String cardHolderName,
-                                 LocalDate expirationDate, BankCardStatus status,
+                                 LocalDateTime expirationDate, BankCardStatus status,
                                  BigDecimal balance, Long userId) {
         String maskedNumber = maskCardNumber(cardNumber);
         return new BankCardDTO(id, cardNumber, cardHolderName, expirationDate,
@@ -49,7 +49,7 @@ public record BankCardDTO(
 
     // Для создания с уже замаскированным номером (из базы)
     public static BankCardDTO withMaskedNumber(Long id, String maskedCardNumber,
-                                               String cardHolderName, LocalDate expirationDate,
+                                               String cardHolderName, LocalDateTime expirationDate,
                                                BankCardStatus status, BigDecimal balance, Long userId) {
         return new BankCardDTO(id, null, cardHolderName, expirationDate,
                 status, balance, maskedCardNumber, userId);

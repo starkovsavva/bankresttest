@@ -1,45 +1,60 @@
 package com.example.bankcards.service.impl;
 
-import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.dto.BankCardDTO;
+import com.example.bankcards.dto.requests.CardCreateRequest;
+import com.example.bankcards.dto.requests.CardSearchRequest;
+import com.example.bankcards.dto.requests.CardUpdateRequest;
+import com.example.bankcards.dto.requests.TransferRequest;
+import com.example.bankcards.entity.BankCard;
+import com.example.bankcards.entity.BankCardStatus;
+import com.example.bankcards.entity.User;
+import com.example.bankcards.repository.BankCardRepository;
 import com.example.bankcards.repository.UserRepository;
-import com.example.bankcards.service.CardService;
+import com.example.bankcards.service.BankCardService;
+import com.example.bankcards.service.EncryptionService;
+import com.example.bankcards.service.mapper.BankCardMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class CardServiceImpl implements CardService {
+public class BankCardServiceImpl implements BankCardService {
 
-    private final CardRepository cardRepository;
+    private final BankCardRepository bankCardRepository;
     private final UserRepository userRepository;
     private final EncryptionService encryptionService;
+    private final BankCardMapper bankCardMapper;
 
     @Override
     public BankCardDTO save(CardCreateRequest request) {
         log.info("Creating new card for user with request: {}", request);
 
         // Валидация срока действия карты
-        if (request.expirationDate().isBefore(LocalDate.now())) {
+        if (request.expirationDate().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Card expiration date cannot be in the past");
         }
 
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.userId()));
+        User user = userRepository.findById(request.targetUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.targetUserId());
 
         // Проверка уникальности номера карты
         String cardHash = encryptionService.hash(request.cardNumber());
-        if (cardRepository.existsByCardNumberHash(cardHash)) {
+        if (bankCardRepository.existsByCardNumberHash(cardHash)) {
             throw new RuntimeException("Card number already exists");
         }
 
         BankCard card = BankCard.builder()
-                .cardNumber(encryptionService.encrypt(request.cardNumber()))
+                .cardNumber(request.cardNumber())
                 .cardNumberHash(cardHash)
                 .cardHolderName(request.cardHolderName())
                 .expirationDate(request.expirationDate())
@@ -48,17 +63,10 @@ public class CardServiceImpl implements CardService {
                 .user(user)
                 .build();
 
-        BankCard savedCard = cardRepository.save(card);
+        BankCard savedCard = bankCardRepository.save(card);
         log.info("Card created successfully with id: {}", savedCard.getId());
 
-        return BankCardDTO.withMaskedNumber(
-                savedCard.getId(),
-                encryptionService.maskCardNumber(request.cardNumber()),
-                savedCard.getCardHolderName(),
-                savedCard.getExpirationDate(),
-                savedCard.getStatus(),
-                savedCard.getBalance(),
-                savedCard.getUser().getId()
+        return bankCardMapper.toDto(savedCard);
         );
     }
 
@@ -66,7 +74,7 @@ public class CardServiceImpl implements CardService {
     public BankCardDTO update(BankCardDTO bankCardDTO) {
         log.info("Updating card with id: {}", bankCardDTO.id());
 
-        BankCard card = cardRepository.findById(bankCardDTO.id())
+        BankCard card = bankCardRepository.findById(bankCardDTO.id())
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + bankCardDTO.id()));
 
         // Обновляем только разрешенные поля
@@ -75,22 +83,22 @@ public class CardServiceImpl implements CardService {
         card.setStatus(bankCardDTO.status());
         card.setBalance(bankCardDTO.balance());
 
-        BankCard updatedCard = cardRepository.save(card);
+        BankCard updatedCard = bankCardRepository.save(card);
 
-        return mapToDTO(updatedCard);
+        return bankCardMapper.toDto(updatedCard);
     }
 
     @Override
     public BankCardDTO updateStatus(Long cardId, CardUpdateRequest request) {
         log.info("Updating status for card id: {} to status: {}", cardId, request.status());
 
-        BankCard card = cardRepository.findById(cardId)
+        BankCard card = bankCardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
 
         card.setStatus(request.status());
-        BankCard updatedCard = cardRepository.save(card);
+        BankCard updatedCard = bankCardRepository.save(card);
 
-        return mapToDTO(updatedCard);
+        return bankCardMapper.toDto(updatedCard);
     }
 
     @Override
@@ -98,8 +106,7 @@ public class CardServiceImpl implements CardService {
     public Page<BankCardDTO> findAll(Pageable pageable) {
         log.debug("Finding all cards with pagination: {}", pageable);
 
-        return cardRepository.findAll(pageable)
-                .map(this::mapToDTO);
+        return bankCardMapper.toDtoSummarySet(bankCardRepository.findAll(pageable));
     }
 
     @Override
@@ -111,8 +118,13 @@ public class CardServiceImpl implements CardService {
             throw new RuntimeException("User not found with id: " + userId);
         }
 
-        return cardRepository.findByUserId(userId, pageable)
-                .map(this::mapToDTO);
+        return bankCardRepository.findByUserId(userId, pageable)
+                .map(bankCardMapper::toDto);
+    }
+
+    @Override
+    public Page<BankCardDTO> searchCards(CardSearchRequest searchRequest) {
+        return null;
     }
 
     @Override
@@ -123,7 +135,7 @@ public class CardServiceImpl implements CardService {
         Specification<BankCard> spec = createSearchSpecification(searchRequest);
         Pageable pageable = Pageable.ofSize(searchRequest.size()).withPage(searchRequest.page());
 
-        return cardRepository.findAll(spec, pageable)
+        return bankCardRepository.findAll(spec, pageable)
                 .map(this::mapToDTO);
     }
 
@@ -132,7 +144,7 @@ public class CardServiceImpl implements CardService {
     public BankCardDTO findOne(Long id) {
         log.debug("Finding card by id: {}", id);
 
-        BankCard card = cardRepository.findById(id)
+        BankCard card = bankCardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
 
         return mapToDTO(card);
@@ -143,11 +155,13 @@ public class CardServiceImpl implements CardService {
     public BankCardDTO findByIdAndUserId(Long id, Long userId) {
         log.debug("Finding card by id: {} for user id: {}", id, userId);
 
-        BankCard card = cardRepository.findByIdAndUserId(id, userId)
+        BankCard card = bankCardRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + id + " for user: " + userId));
 
         return mapToDTO(card);
     }
+
+
 
     @Override
     @Transactional
@@ -158,10 +172,10 @@ public class CardServiceImpl implements CardService {
             throw new IllegalArgumentException("Cannot transfer to the same card");
         }
 
-        BankCard fromCard = cardRepository.findById(request.fromCardId())
+        BankCard fromCard = bankCardRepository.findById(request.fromCardId())
                 .orElseThrow(() -> new RuntimeException("Source card not found"));
 
-        BankCard toCard = cardRepository.findById(request.toCardId())
+        BankCard toCard = bankCardRepository.findById(request.toCardId())
                 .orElseThrow(() -> new RuntimeException("Destination card not found"));
 
         // Проверка возможности перевода
@@ -171,8 +185,8 @@ public class CardServiceImpl implements CardService {
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
         toCard.setBalance(toCard.getBalance().add(request.amount()));
 
-        cardRepository.save(fromCard);
-        cardRepository.save(toCard);
+        bankCardRepository.save(fromCard);
+        bankCardRepository.save(toCard);
 
         log.info("Transfer completed successfully from card {} to card {}",
                 request.fromCardId(), request.toCardId());
@@ -183,7 +197,7 @@ public class CardServiceImpl implements CardService {
     public BigDecimal getBalance(Long cardId) {
         log.debug("Getting balance for card id: {}", cardId);
 
-        BankCard card = cardRepository.findById(cardId)
+        BankCard card = bankCardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
 
         return card.getBalance();
@@ -194,11 +208,11 @@ public class CardServiceImpl implements CardService {
     public void delete(Long id) {
         log.info("Deleting card with id: {}", id);
 
-        if (!cardRepository.existsById(id)) {
+        if (!bankCardRepository.existsById(id)) {
             throw new RuntimeException("Card not found with id: " + id);
         }
 
-        cardRepository.deleteById(id);
+        bankCardRepository.deleteById(id);
         log.info("Card deleted successfully with id: {}", id);
     }
 
@@ -206,11 +220,11 @@ public class CardServiceImpl implements CardService {
     public BankCardDTO blockCard(Long cardId, Long userId) {
         log.info("Blocking card id: {} for user id: {}", cardId, userId);
 
-        BankCard card = cardRepository.findByIdAndUserId(cardId, userId)
+        BankCard card = bankCardRepository.findByIdAndUserId(cardId, userId)
                 .orElseThrow(() -> new RuntimeException("Card not found or access denied"));
 
         card.setStatus(BankCardStatus.BLOCKED);
-        BankCard updatedCard = cardRepository.save(card);
+        BankCard updatedCard = bankCardRepository.save(card);
 
         return mapToDTO(updatedCard);
     }
@@ -268,11 +282,11 @@ public class CardServiceImpl implements CardService {
         }
 
         // Проверка срока действия
-        if (fromCard.getExpirationDate().isBefore(LocalDate.now())) {
+        if (fromCard.getExpirationDate().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Source card has expired");
         }
 
-        if (toCard.getExpirationDate().isBefore(LocalDate.now())) {
+        if (toCard.getExpirationDate().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Destination card has expired");
         }
 
@@ -287,32 +301,5 @@ public class CardServiceImpl implements CardService {
         }
     }
 
-    private BankCardDTO mapToDTO(BankCard card) {
-        try {
-            // Дешифруем номер карты для маскирования
-            String decryptedNumber = encryptionService.decrypt(card.getCardNumber());
-            String maskedNumber = encryptionService.maskCardNumber(decryptedNumber);
 
-            return BankCardDTO.withMaskedNumber(
-                    card.getId(),
-                    maskedNumber,
-                    card.getCardHolderName(),
-                    card.getExpirationDate(),
-                    card.getStatus(),
-                    card.getBalance(),
-                    card.getUser().getId()
-            );
-        } catch (Exception e) {
-            log.warn("Error decrypting card number for card id: {}, using fallback masking", card.getId());
-            return BankCardDTO.withMaskedNumber(
-                    card.getId(),
-                    "**** **** **** ****",
-                    card.getCardHolderName(),
-                    card.getExpirationDate(),
-                    card.getStatus(),
-                    card.getBalance(),
-                    card.getUser().getId()
-            );
-        }
-    }
 }
