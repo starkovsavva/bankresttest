@@ -1,6 +1,7 @@
 package com.example.bankcards.service.impl;
 
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.UserAlreadyExistsException;
 import com.example.bankcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -62,7 +63,7 @@ public class UserService {
      *
      * @return созданный пользователь
      */
-    public User create(User user) {
+    public User create(User user) throws UserAlreadyExistsException {
         if (userRepository.existsByUsername(user.getUsername())) {
             // Заменить на свои исключения
             throw new UserAlreadyExistsException("Пользователь с таким именем уже существует");

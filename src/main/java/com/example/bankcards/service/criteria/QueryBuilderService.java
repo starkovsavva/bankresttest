@@ -21,9 +21,9 @@ public abstract class QueryBuilderService<E> {
 
     protected <X> Specification<E> buildSpecificationGeneric(Filter<X> filter, Function<Root<E>, Expression<X>> metaclassFn) {
         if (filter.getEquals() != null) {
-            return (root, query, builder) -> builder.equal(metaclassFn.apply(root), filter.getEq());
+            return (root, query, builder) -> builder.equal(metaclassFn.apply(root), filter.getEquals());
         } else if (filter.getNotEquals() != null) {
-            return (root, query, builder) -> builder.not(builder.equal(metaclassFn.apply(root), filter.getNeq()));
+            return (root, query, builder) -> builder.not(builder.equal(metaclassFn.apply(root), filter.getNotEquals()));
         } else if (filter.getIn() != null) {
             return (root, query, builder) -> {
                 CriteriaBuilder.In<X> in = builder.in(metaclassFn.apply(root));

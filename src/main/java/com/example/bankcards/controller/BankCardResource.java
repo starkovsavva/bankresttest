@@ -38,11 +38,10 @@ public class BankCardResource {
     private final BankCardService bankCardService;
 
     /**
-     * {@code POST  /cards} : Create a new bank card.
+     * {@code POST  /cards} : Создание новой банковской карты.
      *
-     * @param cardCreateRequest the BankCardDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new cardCreateRequest,
-     *
+     * @param cardCreateRequest объект BankCardDTO для создания.
+     * @return {@link ResponseEntity} со статусом {@code 201 (Created)} и с телом новой cardCreateRequest.
      */
     @PostMapping("/cards")
     @PreAuthorize("hasRole('ADMIN')")
@@ -60,12 +59,12 @@ public class BankCardResource {
     }
 
     /**
-     * {@code PUT  /cards/:id} : Updates an existing card.
+     * {@code PUT  /cards/:id} : Обновление существующей карты.
      *
-     * @param id the id of the BankCardDTO to save.
-     * @param BankCardDTO the BankCardDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated BankCardDTO,
-     * or with status {@code 400 (Bad Request)} if the BankCardDTO is not valid.
+     * @param id идентификатор BankCardDTO для сохранения.
+     * @param BankCardDTO объект BankCardDTO для обновления.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)} и с телом обновленного BankCardDTO,
+     * или со статусом {@code 400 (Bad Request)} если BankCardDTO невалиден.
      */
     @PutMapping("/cards/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -84,10 +83,10 @@ public class BankCardResource {
     }
 
     /**
-     * {@code GET  /cards} : get all the cards.
+     * {@code GET  /cards} : Получение всех карт.
      *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of cards in body.
+     * @param pageable информация о пагинации.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)} и списком карт в теле.
      */
     @GetMapping("/cards")
     @PreAuthorize("hasRole('ADMIN')")
@@ -99,10 +98,10 @@ public class BankCardResource {
     }
 
     /**
-     * {@code DELETE  /cards/:id} : delete the "id" card.
+     * {@code DELETE  /cards/:id} : Удаление карты с "id".
      *
-     * @param id the id of the BankCardDTO to delete.
-     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     * @param id идентификатор BankCardDTO для удаления.
+     * @return {@link ResponseEntity} со статусом {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/cards/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -113,11 +112,11 @@ public class BankCardResource {
     }
 
     /**
-     * {@code GET  /cards/:id} : get the "id" card.
+     * {@code GET  /cards/:id} : Получение карты с "id".
      *
-     * @param id the id of the BankCardDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the BankCardDTO,
-     * or with status {@code 404 (Not Found)}.
+     * @param id идентификатор BankCardDTO для получения.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)} и с телом BankCardDTO,
+     * или со статусом {@code 404 (Not Found)}.
      */
     @GetMapping("/cards/{id}")
     @PreAuthorize("hasRole('USER')")
@@ -130,10 +129,10 @@ public class BankCardResource {
 
 
     /**
-     * {@code GET  /my-cards} : get all cards for current user.
+     * {@code GET  /my-cards} : Получение всех карт текущего пользователя.
      *
-     * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of cards in body.
+     * @param pageable информация о пагинации.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)} и списком карт в теле.
      */
     @GetMapping("/my-cards")
     @PreAuthorize("hasRole('USER')")
@@ -146,10 +145,10 @@ public class BankCardResource {
     }
 
     /**
-     * {@code POST  /cards/transfer} : transfer between user's own cards.
+     * {@code POST  /cards/transfer} : Перевод между собственными картами пользователя.
      *
-     * @param transferRequest the transfer request.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
+     * @param transferRequest запрос на перевод.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)}.
      */
     @PostMapping("/cards/transfer")
     @PreAuthorize("hasRole('USER')")
@@ -161,10 +160,10 @@ public class BankCardResource {
     }
 
     /**
-     * {@code PUT  /cards/:id/block} : block a card.
+     * {@code PUT  /cards/:id/block} : Блокировка карты.
      *
-     * @param id the id of the card to block.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated BankCardDTO.
+     * @param id идентификатор карты для блокировки.
+     * @return {@link ResponseEntity} со статусом {@code 200 (OK)} и с телом обновленного BankCardDTO.
      */
     @PutMapping("/cards/{id}/block")
     @PreAuthorize("hasRole('USER')")

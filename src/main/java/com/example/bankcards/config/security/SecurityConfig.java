@@ -1,5 +1,7 @@
 package com.example.bankcards.config.security;
 
+import com.example.bankcards.config.auth.JwtAuthFilter;
+import com.example.bankcards.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +37,7 @@ public class SecurityConfig {
 
 
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/**").permitAll()
+                        .anyRequest().permitAll()
 //                    .permitAll()  // ← Добавьте эту строку
 //                    .requestMatchers("/paste/**").permitAll()
 //                .requestMatchers("/auth/**").permitAll()

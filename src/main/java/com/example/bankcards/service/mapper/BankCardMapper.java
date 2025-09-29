@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
     @Mapping(target = "maskedCardNumber", source = "cardNumber", qualifiedByName = "maskCardNumber")
-    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userId", source = "id")
     BankCardDTO toDto(BankCard bankCard);
 
     @Mapping(target = "user", ignore = true)
@@ -44,27 +44,15 @@ public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
     @Mapping(target = "status", source = "status")
     BankCardDTO toDtoSummary(BankCard bankCard);
 
-    @Named("bankCardSummarySet")
-    default Page<BankCardDTO> toDtoSummarySet(BankCard bankCards) {
-        return bankCards.stream().map(this::toDtoSummary).collect(Collectors.toSet());
-    }
+//    @Named("bankCardSummarySet")
+//    default Page<BankCardDTO> toDtoSummarySet(BankCard bankCards) {
+//        return bankCards.stream().map(this::toDtoSummary).collect(Collectors.toSet());
+//    }
 
-    @Named("bankCardSummaryPage")
-    default Page<BankCardDTO> toDtoSummaryPage(Collection<BankCard> bankCards, Pageable pageable) {
-        List<BankCard> bankCardList = new ArrayList<>(bankCards);
+    @Named("toDtoSummaryPage")
+    default Page<BankCardDTO> toDtoSummaryPage(Page<BankCard> bankCards) {
+      return bankCards.map(this::toDtoSummary);
+    };
 
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), bankCardList.size());
 
-        if (start > bankCardList.size()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, bankCardList.size());
-        }
-
-        List<BankCardDTO> dtos = bankCardList.subList(start, end)
-                .stream()
-                .map(this::toDtoSummary)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(dtos, pageable, bankCardList.size());
-    }
 }

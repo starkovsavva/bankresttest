@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,7 @@ public class BankCardServiceImpl implements BankCardService {
     private final UserRepository userRepository;
     private final EncryptionService encryptionService;
     private final BankCardMapper bankCardMapper;
-
+//save
     @Override
     public BankCardDTO save(CardCreateRequest request) {
         log.info("Creating new card for user with request: {}", request);
@@ -45,7 +46,7 @@ public class BankCardServiceImpl implements BankCardService {
         }
 
         User user = userRepository.findById(request.targetUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.targetUserId());
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.targetUserId()));
 
         // Проверка уникальности номера карты
         String cardHash = encryptionService.hash(request.cardNumber());
@@ -67,9 +68,9 @@ public class BankCardServiceImpl implements BankCardService {
         log.info("Card created successfully with id: {}", savedCard.getId());
 
         return bankCardMapper.toDto(savedCard);
-        );
-    }
 
+    }
+//update
     @Override
     public BankCardDTO update(BankCardDTO bankCardDTO) {
         log.info("Updating card with id: {}", bankCardDTO.id());
@@ -100,13 +101,13 @@ public class BankCardServiceImpl implements BankCardService {
 
         return bankCardMapper.toDto(updatedCard);
     }
-
+//findAll
     @Override
     @Transactional(readOnly = true)
     public Page<BankCardDTO> findAll(Pageable pageable) {
         log.debug("Finding all cards with pagination: {}", pageable);
 
-        return bankCardMapper.toDtoSummarySet(bankCardRepository.findAll(pageable));
+        return bankCardMapper.toDtoSummaryPage(bankCardRepository.findAll(pageable));
     }
 
     @Override
@@ -118,26 +119,20 @@ public class BankCardServiceImpl implements BankCardService {
             throw new RuntimeException("User not found with id: " + userId);
         }
 
-        return bankCardRepository.findByUserId(userId, pageable)
-                .map(bankCardMapper::toDto);
+        return bankCardMapper.toDtoSummaryPage(bankCardRepository.findByUserId(userId, pageable));
     }
 
-    @Override
-    public Page<BankCardDTO> searchCards(CardSearchRequest searchRequest) {
-        return null;
-    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<BankCardDTO> searchCards(CardSearchRequest searchRequest) {
-        log.debug("Searching cards with criteria: {}", searchRequest);
-
-        Specification<BankCard> spec = createSearchSpecification(searchRequest);
-        Pageable pageable = Pageable.ofSize(searchRequest.size()).withPage(searchRequest.page());
-
-        return bankCardRepository.findAll(spec, pageable)
-                .map(this::mapToDTO);
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Page<BankCardDTO> searchCards(CardSearchRequest searchRequest) {
+//        log.debug("Searching cards with criteria: {}", searchRequest);
+//
+//        Specification<BankCard> spec = createSearchSpecification(searchRequest);
+//        Pageable pageable = Pageable.ofSize(searchRequest.size()).withPage(searchRequest.page());
+//
+//        return bankCardMapper.toDtoSummaryPage(bankCardRepository.findAll(spec, pageable));
+//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -147,25 +142,40 @@ public class BankCardServiceImpl implements BankCardService {
         BankCard card = bankCardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
 
-        return mapToDTO(card);
+        return bankCardMapper.toDto(card);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public BankCardDTO findByIdAndUserId(Long id, Long userId) {
-        log.debug("Finding card by id: {} for user id: {}", id, userId);
-
-        BankCard card = bankCardRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id + " for user: " + userId));
-
-        return mapToDTO(card);
-    }
-
+//    @Override
+//    public BankCardDTO findByIdAndUserId(Long id, Long userId) {
+//        return null;
+//    }
 
 
     @Override
     @Transactional
-    public void transfer(TransferRequest request) {
+    public boolean transferBetweenOwnCards(TransferRequest request, Long userId){
+        log.info("Processing transfer between own cards for user {}: {}", userId, request);
+
+        // Быстрая валидация
+        if (request.fromCardId().equals(request.toCardId())) {
+            throw new IllegalArgumentException("Cannot transfer to the same card");
+        }
+
+        // Атомарная проверка принадлежности карт пользователю
+        boolean cardsBelongToUser = bankCardRepository.existsByIdAndUserId(request.fromCardId(), userId)
+                && bankCardRepository.existsByIdAndUserId(request.toCardId(), userId);
+
+        if (!cardsBelongToUser) {
+            throw new SecurityException("One or both cards do not belong to the user");
+        }
+
+        transfer(request);
+
+        return true;
+    };
+    @Override
+    @Transactional
+    public boolean transfer(TransferRequest request) {
         log.info("Processing transfer request: {}", request);
 
         if (request.fromCardId().equals(request.toCardId())) {
@@ -190,22 +200,24 @@ public class BankCardServiceImpl implements BankCardService {
 
         log.info("Transfer completed successfully from card {} to card {}",
                 request.fromCardId(), request.toCardId());
+
+        return true;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public BigDecimal getBalance(Long cardId) {
-        log.debug("Getting balance for card id: {}", cardId);
-
-        BankCard card = bankCardRepository.findById(cardId)
-                .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
-
-        return card.getBalance();
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public BigDecimal getBalance(Long cardId) {
+//        log.debug("Getting balance for card id: {}", cardId);
+//
+//        BankCard card = bankCardRepository.findById(cardId)
+//                .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
+//
+//        return card.getBalance();
+//    }
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         log.info("Deleting card with id: {}", id);
 
         if (!bankCardRepository.existsById(id)) {
@@ -214,6 +226,7 @@ public class BankCardServiceImpl implements BankCardService {
 
         bankCardRepository.deleteById(id);
         log.info("Card deleted successfully with id: {}", id);
+        return true;
     }
 
     @Override
@@ -226,50 +239,10 @@ public class BankCardServiceImpl implements BankCardService {
         card.setStatus(BankCardStatus.BLOCKED);
         BankCard updatedCard = bankCardRepository.save(card);
 
-        return mapToDTO(updatedCard);
+        return bankCardMapper.toDto(updatedCard);
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
 
-    private Specification<BankCard> createSearchSpecification(CardSearchRequest request) {
-        return (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (request.cardHolderName() != null && !request.cardHolderName().isBlank()) {
-                predicates.add(criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("cardHolderName")),
-                        "%" + request.cardHolderName().toLowerCase() + "%"
-                ));
-            }
-
-            if (request.status() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), request.status()));
-            }
-
-            if (request.expirationDateFrom() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                        root.get("expirationDate"), request.expirationDateFrom()
-                ));
-            }
-
-            if (request.expirationDateTo() != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                        root.get("expirationDate"), request.expirationDateTo()
-                ));
-            }
-
-            // Поиск по имени пользователя (если нужно)
-            if (request.userName() != null && !request.userName().isBlank()) {
-                Join<BankCard, User> userJoin = root.join("user");
-                predicates.add(criteriaBuilder.like(
-                        criteriaBuilder.lower(userJoin.get("firstName")),
-                        "%" + request.userName().toLowerCase() + "%"
-                ));
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
-    }
 
     private void validateTransfer(BankCard fromCard, BankCard toCard, BigDecimal amount) {
         // Проверка статуса карт

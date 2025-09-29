@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -24,7 +24,10 @@ spring:
     show-sql: true
 
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    change-log: classpath:db/migration/v1.0/db.changelog-master.yaml
+    enabled: false
+    default-schema: public
+    liquibase-schema: public
 
 springdoc:
   api-docs:
@@ -36,7 +39,7 @@ springdoc:
     tags-sorter: alpha
     display-request-duration: true
     filter: true
-  packages-to-scan: com.bank.controller
+  packages-to-scan: com.example.bankcards.controller
   paths-to-match: /api/**
   info:
     title: Bank Card Management System API
@@ -63,4 +66,4 @@ app:
     secret-key: "your-32-character-base64-secret-key-here"
 token:
     signing:
-        key:53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
+        key: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855

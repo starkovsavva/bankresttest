@@ -1,11 +1,17 @@
 package com.example.bankcards.service.impl;
 
+import com.example.bankcards.config.auth.JwtAuthResponse;
+import com.example.bankcards.config.auth.JwtService;
+import com.example.bankcards.dto.UserSignUpDto;
+import com.example.bankcards.dto.UserSignInDto;
+import com.example.bankcards.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.example.bankcards.entity.User;
+import com.example.bankcards.entity.Role;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -20,14 +26,13 @@ public class AuthenticationService {
      * @param request данные пользователя
      * @return токен
      */
-    public JwtAuthResponse signUp(UserSignUpDto request) {
+    public JwtAuthResponse signUp(UserSignUpDto request) throws UserAlreadyExistsException {
 
         var user = User.builder()
                 .username(request.getNickname())
                 .email(request.getEmail())
-                .enabled(true)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.ROLE_USER)
                 .build();
 
         userService.create(user);

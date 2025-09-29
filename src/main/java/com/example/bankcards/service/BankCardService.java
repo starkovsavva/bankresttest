@@ -17,11 +17,12 @@ public interface BankCardService {
     BankCardDTO updateStatus(Long cardId, CardUpdateRequest request);
     Page<BankCardDTO> findAll(Pageable pageable);
     Page<BankCardDTO> findByUserId(Long userId, Pageable pageable);
-    Page<BankCardDTO> searchCards(CardSearchRequest searchRequest);
+//    Page<BankCardDTO> searchCards(CardSearchRequest searchRequest);
     BankCardDTO findOne(Long id);
-    BankCardDTO findByIdAndUserId(Long id, Long userId);
-    void transfer(TransferRequest request);
-    BigDecimal getBalance(Long cardId);
-    void delete(Long id);
+//    BankCardDTO findByIdAndUserId(Long id, Long userId);
+    boolean transferBetweenOwnCards(TransferRequest request, Long userId);
+    boolean transfer(TransferRequest request);
+//    BigDecimal getBalance(Long cardId);
+    boolean delete(Long id);
     BankCardDTO blockCard(Long cardId, Long userId);
 }
