@@ -18,7 +18,7 @@ public interface BankCardRepository extends JpaRepository<BankCard,Long>, JpaSpe
 
     boolean existsByCardNumberHash(String cardHash);
 
-    List<BankCard> findAllWithUserByIds(List<Long> bankCardIds);
+//    List<BankCard> findAllWithUserByIds(List<Long> bankCardIds);
 
     Page<BankCard> findByUserId(Long userId, Pageable pageable);
 

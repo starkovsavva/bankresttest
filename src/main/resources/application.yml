@@ -9,14 +9,14 @@
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/bank_db
+    url: jdbc:postgresql://localhost:5432/postgres
     username: bank_user
     password: bank_password
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -63,7 +63,7 @@ logging:
 
 app:
   encryption:
-    secret-key: "your-32-character-base64-secret-key-here"
+    secret: "your-32-character-base64-secret-key-here"
 token:
     signing:
         key: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
