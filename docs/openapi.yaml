@@ -1,1 +1,578 @@
 # Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+openapi: 3.0.3
+info:
+  title: Bank Card Management API
+  description: |
+    # Bank Card Management System
+    
+    REST API для управления банковскими картами, пользователями и операциями.
+    
+    ## Аутентификация
+    
+    Для доступа к защищенным эндпоинтам необходимо:
+    1. Зарегистрироваться через `/auth/sign-up` или войти через `/auth/sign-in`
+    2. Получить JWT токен
+    3. Использовать токен в заголовке `Authorization: Bearer <token>`
+    
+    ## Роли пользователей
+    
+    - **USER** - может управлять своими картами, делать переводы
+    - **ADMIN** - полный доступ ко всем операциям
+
+  version: 1.0.0
+  contact:
+    name: Bank API Support
+    email: support@bank.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.bank.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Регистрация и аутентификация пользователей
+  - name: Bank Cards
+    description: Управление банковскими картами
+  - name: Users
+    description: Управление пользователями
+  - name: Operations
+    description: Операции с картами
+
+paths:
+  # ========== АУТЕНТИФИКАЦИЯ ==========
+  /auth/sign-up:
+    post:
+      tags:
+        - Authentication
+      summary: Регистрация нового пользователя
+      description: Создает нового пользователя в системе и возвращает JWT токен
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+        '400':
+          description: Неверные данные запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/sign-in:
+    post:
+      tags:
+        - Authentication
+      summary: Вход в систему
+      description: Аутентификация пользователя и получение JWT токена
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Обновление токена
+      description: Обновление JWT токена с использованием refresh токена
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Токен успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtAuthResponse'
+
+  # ========== БАНКОВСКИЕ КАРТЫ (ADMIN) ==========
+  /api/cards:
+    post:
+      tags:
+        - Bank Cards
+      summary: Создание новой банковской карты (ADMIN)
+      description: Создает новую банковскую карту. Требует роль ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardCreateRequest'
+      responses:
+        '201':
+          description: Карта успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCardDTO'
+        '400':
+          description: Неверные данные карты
+        '403':
+          description: Недостаточно прав
+
+    get:
+      tags:
+        - Bank Cards
+      summary: Получение всех карт (ADMIN)
+      description: Возвращает список всех банковских карт с пагинацией. Требует роль ADMIN.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы (начинается с 0)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Размер страницы
+        - name: sort
+          in: query
+          schema:
+            type: string
+          description: Поле для сортировки (формат: field,asc|desc)
+      responses:
+        '200':
+          description: Успешное получение списка карт
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BankCardDTO'
+
+  /api/cards/{id}:
+    get:
+      tags:
+        - Bank Cards
+      summary: Получение карты по ID (USER)
+      description: Возвращает информацию о конкретной банковской карте. Требует роль USER.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: ID банковской карты
+      responses:
+        '200':
+          description: Успешное получение карты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCardDTO'
+        '404':
+          description: Карта не найдена
+
+    put:
+      tags:
+        - Bank Cards
+      summary: Обновление карты (ADMIN)
+      description: Обновляет информацию о банковской карте. Требует роль ADMIN.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: ID банковской карты
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BankCardDTO'
+      responses:
+        '200':
+          description: Карта успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCardDTO'
+        '400':
+          description: Неверные данные
+        '404':
+          description: Карта не найдена
+
+    delete:
+      tags:
+        - Bank Cards
+      summary: Удаление карты (ADMIN)
+      description: Удаляет банковскую карту по ID. Требует роль ADMIN.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: ID банковской карты
+      responses:
+        '204':
+          description: Карта успешно удалена
+        '404':
+          description: Карта не найдена
+
+  # ========== ОПЕРАЦИИ С КАРТАМИ (USER) ==========
+  /api/my-cards:
+    get:
+      tags:
+        - Bank Cards
+      summary: Получение карт текущего пользователя (USER)
+      description: Возвращает все банковские карты текущего аутентифицированного пользователя.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Номер страницы
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Размер страницы
+      responses:
+        '200':
+          description: Успешное получение карт пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BankCardDTO'
+
+  /api/cards/transfer:
+    post:
+      tags:
+        - Operations
+      summary: Перевод между собственными картами (USER)
+      description: Перевод средств между картами текущего пользователя.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Перевод успешно выполнен
+        '400':
+          description: Недостаточно средств или неверные данные
+        '403':
+          description: Попытка перевода с чужой карты
+
+  /api/cards/{id}/block:
+    put:
+      tags:
+        - Operations
+      summary: Блокировка карты (USER)
+      description: Блокирует карту текущего пользователя.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: ID банковской карты
+      responses:
+        '200':
+          description: Карта успешно заблокирована
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCardDTO'
+        '403':
+          description: Попытка блокировки чужой карты
+        '404':
+          description: Карта не найдена
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Введите JWT токен в формате 'Bearer {token}'
+
+  schemas:
+    # ========== АУТЕНТИФИКАЦИЯ ==========
+    SignUpRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: "john_doe"
+          description: Уникальное имя пользователя
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+          description: Email адрес
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+          example: "mySecretPassword123"
+          description: Пароль
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: "John"
+          description: Имя
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: "Doe"
+          description: Фамилия
+
+    SignInRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "john_doe"
+        password:
+          type: string
+          example: "mySecretPassword123"
+
+    JwtAuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: JWT access token
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: Refresh token для получения нового access token
+        expiresIn:
+          type: integer
+          example: 86400000
+          description: Время жизни токена в миллисекундах
+
+    # ========== БАНКОВСКИЕ КАРТЫ ==========
+    BankCardDTO:
+      type: object
+      required:
+        - id
+        - cardNumber
+        - cardHolderName
+        - expirationDate
+        - balance
+        - status
+        - userId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+          description: Уникальный идентификатор карты
+        cardNumber:
+          type: string
+          example: "************5678"
+          description: Маскированный номер карты
+        cardHolderName:
+          type: string
+          example: "JOHN DOE"
+          description: Имя держателя карты
+        expirationDate:
+          type: string
+          format: date
+          example: "2025-12-31"
+          description: Дата окончания действия
+        balance:
+          type: number
+          format: double
+          minimum: 0
+          example: 1500.75
+          description: Баланс карты
+        status:
+          type: string
+          enum: [ACTIVE, BLOCKED, EXPIRED]
+          example: "ACTIVE"
+          description: Статус карты
+        userId:
+          type: integer
+          format: int64
+          example: 1
+          description: ID владельца карты
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+
+    CardCreateRequest:
+      type: object
+      required:
+        - cardNumber
+        - cardHolderName
+        - expirationDate
+        - userId
+      properties:
+        cardNumber:
+          type: string
+          pattern: '^[0-9]{16}$'
+          example: "1234567812345678"
+          description: Номер карты (16 цифр)
+        cardHolderName:
+          type: string
+          example: "JOHN DOE"
+          description: Имя держателя карты
+        expirationDate:
+          type: string
+          format: date
+          example: "2025-12-31"
+          description: Дата окончания действия
+        userId:
+          type: integer
+          format: int64
+          example: 1
+          description: ID пользователя-владельца
+
+    CardUpdateRequest:
+      type: object
+      properties:
+        cardHolderName:
+          type: string
+          example: "JOHN SMITH"
+        expirationDate:
+          type: string
+          format: date
+          example: "2026-12-31"
+
+    # ========== ОПЕРАЦИИ ==========
+    TransferRequest:
+      type: object
+      required:
+        - fromCardId
+        - toCardId
+        - amount
+      properties:
+        fromCardId:
+          type: integer
+          format: int64
+          example: 1
+          description: ID карты-отправителя
+        toCardId:
+          type: integer
+          format: int64
+          example: 2
+          description: ID карты-получателя
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 100.50
+          description: Сумма перевода
+
+    # ========== ОШИБКИ ==========
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Invalid card number"
+        path:
+          type: string
+          example: "/api/cards"
+        details:
+          type: array
+          items:
+            type: string
+          example: ["Card number must be 16 digits"]
+
+security:
+  - bearerAuth: []
