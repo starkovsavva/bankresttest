@@ -1,5 +1,0 @@
-databaseChangeLog:
-  - include:
-      file: db/migration/v1.0/29-01-changelog.yaml.yaml
-  - include:
-      file: db/migration/v1.0/29-01-changelog-insert.yaml.yaml
