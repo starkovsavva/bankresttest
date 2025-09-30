@@ -5,6 +5,7 @@ import com.example.bankcards.dto.requests.CardCreateRequest;
 import com.example.bankcards.dto.requests.CardUpdateRequest;
 import com.example.bankcards.dto.requests.TransferRequest;
 import com.example.bankcards.entity.BankCard;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.service.BankCardService;
 import com.example.bankcards.exception.BadRequestException;
 import com.example.bankcards.util.PaginationUtil;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -175,7 +178,11 @@ public class BankCardResource {
     }
 
     private Long getCurrentUserId() {
-        // Реализация получения ID текущего пользователя
-        return 1L; // Заглушка
+        // Example: extract user ID from SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            return user.getId();
+        }
+        throw new IllegalStateException("User not authenticated");
     }
 }
