@@ -28,8 +28,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres  # ← Подключаемся к postgres
       SPRING_DATASOURCE_USERNAME: bank_user
       SPRING_DATASOURCE_PASSWORD: bank_password
-      SPRING_LIQUIBASE_ENABLED: "false"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_LIQUIBASE_ENABLED: "true"
+      LOGGING_LEVEL_LIQUIBASE: "ERROR"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_BOOT_AUTOCONFIGURE_LIQUIBASE: "ERROR"
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
     ports:
       - "8080:8080"
     depends_on:

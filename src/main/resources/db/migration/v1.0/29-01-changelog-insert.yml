@@ -23,7 +23,7 @@ databaseChangeLog:
                   value: "User"
               - column:
                   name: role
-                  value: "ADMIN"
+                  value: "ROLE_ADMIN"
               - column:
                   name: created_at
                   value: "2024-01-01 00:00:00"
@@ -51,7 +51,7 @@ databaseChangeLog:
                   value: "Doe"
               - column:
                   name: role
-                  value: "USER"
+                  value: "ROLE_USER"
               - column:
                   name: created_at
                   value: "2024-01-01 00:00:00"

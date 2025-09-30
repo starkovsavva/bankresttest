@@ -15,8 +15,8 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
-    hibernate:
-      ddl-auto: update
+#    hibernate:
+#      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -25,7 +25,7 @@ spring:
 
   liquibase:
     change-log: classpath:db/migration/v1.0/db.changelog-master.yaml
-    enabled: false
+    enabled: true
     default-schema: public
     liquibase-schema: public
 
