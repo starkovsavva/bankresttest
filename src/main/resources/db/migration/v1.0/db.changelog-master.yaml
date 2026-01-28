@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: classpath:db/migration/v1.0/29-01-changelog.yml
+  - include:
+      file: classpath:db/migration/v1.0/29-01-changelog-insert.yml
