@@ -1,17 +1,33 @@
 package com.example.bankcards.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bank_cards")
+@Getter
+@Setter
 @Builder
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class BankCard implements Serializable {
@@ -23,10 +39,10 @@ public class BankCard implements Serializable {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String cardNumber; // зашифрованное
+    private String cardNumber;
 
     @Column(nullable = false)
-    private String cardNumberHash; // для уникальных значений
+    private String cardNumberHash;
 
     @Column(nullable = false)
     private String cardHolderName;
@@ -38,7 +54,7 @@ public class BankCard implements Serializable {
     @Column(nullable = false)
     private BankCardStatus status;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -64,13 +80,10 @@ public class BankCard implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof BankCard)) {
-            return false;
-        }
-        return id != null && id.equals(((BankCard) o).id);
+        if (this == o) return true;
+        if (!(o instanceof BankCard)) return false;
+        BankCard bankCard = (BankCard) o;
+        return id != null && id.equals(bankCard.id);
     }
 
     @Override
@@ -82,98 +95,13 @@ public class BankCard implements Serializable {
     public String toString() {
         return "BankCard{" +
                 "id=" + id +
-                ", cardNumber='" + cardNumber + '\'' +
-                ", cardNumberHash='" + cardNumberHash + '\'' +
                 ", cardHolderName='" + cardHolderName + '\'' +
                 ", expirationDate=" + expirationDate +
                 ", status=" + status +
                 ", balance=" + balance +
-                ", user=" + user +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCardNumber() {
-        return cardNumber;
-    }
-
-    public void setCardNumber(String cardNumber) {
-        this.cardNumber = cardNumber;
-    }
-
-    public String getCardNumberHash() {
-        return cardNumberHash;
-    }
-
-    public void setCardNumberHash(String cardNumberHash) {
-        this.cardNumberHash = cardNumberHash;
-    }
-
-    public String getCardHolderName() {
-        return cardHolderName;
-    }
-
-    public void setCardHolderName(String cardHolderName) {
-        this.cardHolderName = cardHolderName;
-    }
-
-    public LocalDateTime getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDateTime expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
-    public BankCardStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BankCardStatus status) {
-        this.status = status;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }
-
-
 

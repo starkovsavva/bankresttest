@@ -3,7 +3,6 @@ package com.example.bankcards.config.security;
 import com.example.bankcards.config.auth.JwtAuthFilter;
 import com.example.bankcards.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,44 +12,44 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    @Autowired
+
     private final JwtAuthFilter jwtAuthFilter;
-    @Autowired
     private final UserService userService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-//                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-//                                .ignoringRequestMatchers("/auth/**","/api/**", "/swagger-ui/**", "/v3/api-docs/**") // Исключения для API и Swagger
-
-
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/configuration/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+                        .antMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .antMatchers("/v3/api-docs/**").permitAll()
+                        .antMatchers("/swagger-resources/**").permitAll()
+                        .antMatchers("/webjars/**").permitAll()
+                        .antMatchers("/configuration/**").permitAll()
+                        .antMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .antMatchers("/actuator/health").permitAll()
+                        .antMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(manager -> manager.disable())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
         return http.build();
     }
 
@@ -68,8 +67,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }

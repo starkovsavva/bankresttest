@@ -3,6 +3,11 @@ databaseChangeLog:
       id: 1759156339955-1
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: bank_cards
       changes:
         - createTable:
             columns:
@@ -43,7 +48,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                   name: balance
-                  type: DECIMAL
+                  type: DECIMAL(19,2)
               - column:
                   constraints:
                     nullable: false
@@ -60,6 +65,11 @@ databaseChangeLog:
       id: 1759156339955-2
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: users
       changes:
         - createTable:
             columns:
@@ -112,6 +122,12 @@ databaseChangeLog:
       id: 1759156339955-3
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            uniqueConstraintExists:
+              tableName: bank_cards
+              constraintName: uc_bank_cards_cardnumber
       changes:
         - addUniqueConstraint:
             columnNames: card_number
@@ -121,6 +137,12 @@ databaseChangeLog:
       id: 1759156339955-4
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            uniqueConstraintExists:
+              tableName: users
+              constraintName: uc_users_email
       changes:
         - addUniqueConstraint:
             columnNames: email
@@ -130,6 +152,12 @@ databaseChangeLog:
       id: 1759156339955-5
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            uniqueConstraintExists:
+              tableName: users
+              constraintName: uc_users_username
       changes:
         - addUniqueConstraint:
             columnNames: username
@@ -139,11 +167,12 @@ databaseChangeLog:
       id: 1759156339955-6
       author: user
       objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
-      changes:
-        - addForeignKeyConstraint:
-            baseColumnNames: user_id
-            baseTableName: bank_cards
-            constraintName: FK_BANK_CARDS_ON_USER
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            foreignKeyConstraintExists:
+              foreignKeyTableName: bank_cards
+              foreignKeyName: FK_BANK_CARDS_ON_USER
             referencedColumnNames: id
             referencedTableName: users
 

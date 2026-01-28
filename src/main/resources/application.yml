@@ -1,69 +1,129 @@
-#
-# application.yml — главный конфигурационный файл Spring Boot.
-
-#Что нужно сделать:
-#  - Указать настройки подключения к базе данных.
-#  - Указать порт приложения.
-#  - Настроить параметры безопасности и JWT.
-#  - Включить Swagger UI.
+server:
+  port: 8080
 
 spring:
+  application:
+    name: bank-card-management
+  
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: bank_user
-    password: bank_password
+    url: jdbc:postgresql://localhost:5432/bankcards
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
-
+    hikari:
+      pool-name: BankCardsHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+  
   jpa:
-#    hibernate:
-#      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: true
-
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
   liquibase:
-    change-log: classpath:db/migration/v1.0/db.changelog-master.yaml
     enabled: true
-    default-schema: public
-    liquibase-schema: public
+    change-log: classpath:db/migration/v1.0/db.changelog-master.yaml
+    contexts: ${LIQUIBASE_CONTEXTS:dev}
+
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-here-change-in-production}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:8080}
+    allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+    allowed-headers: "*"
+    exposed-headers: Authorization,Link,X-Total-Count
+    allow-credentials: true
+    max-age: 3600
+  
+  encryption:
+    secret-key: ${ENCRYPTION_KEY:your-encryption-secret-key}
 
 springdoc:
   api-docs:
     path: /v3/api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
-    operations-sorter: method
-    tags-sorter: alpha
-    display-request-duration: true
-    filter: true
-  packages-to-scan: com.example.bankcards.controller
-  paths-to-match: /api/**
-  info:
-    title: Bank Card Management System API
-    description: REST API for managing bank cards and transactions
-    version: 1.0.0
-    contact:
-      name: Bank API Support
-      email: support@bank.com
-server:
-  port: 8080
-
-jwt:
-  secret: bank-card-management-system-secret-key-2024
-  expiration: 86400000
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: false
 
 logging:
   level:
-    com.bank: DEBUG
-    org.springframework.security: DEBUG
+    root: INFO
+    com.example.bankcards: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
-app:
-  encryption:
-    secret: "your-32-character-base64-secret-key-here"
-token:
-    signing:
-        key: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  
+  liquibase:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.example.bankcards: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  
+  liquibase:
+    contexts: prod
+
+logging:
+  level:
+    root: WARN
+    com.example.bankcards: INFO
+    org.springframework.security: WARN

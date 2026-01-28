@@ -1,6 +1,14 @@
 package com.example.bankcards.exception;
 
-public class UserNotFoundException extends Throwable {
-    public UserNotFoundException(String s) {
+import org.springframework.http.HttpStatus;
+
+public class UserNotFoundException extends ApiException {
+
+    public UserNotFoundException(String message) {
+        super(message, HttpStatus.NOT_FOUND, "USER_NOT_FOUND");
+    }
+
+    public UserNotFoundException() {
+        this("User not found");
     }
 }

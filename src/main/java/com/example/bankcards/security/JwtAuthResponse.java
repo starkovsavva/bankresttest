@@ -1,4 +1,4 @@
-package com.example.bankcards.config.auth;
+package com.example.bankcards.security;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -49,10 +49,10 @@ import com.example.bankcards.entity.User;
 import com.example.bankcards.service.BankCardService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebMvcTest(value = BankCardResource.class,
+@WebMvcTest(value = BankCardController.class,
     excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityConfig.class))
 @AutoConfigureMockMvc(addFilters = false)
-class BankCardResourceTest {
+class BankCardControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

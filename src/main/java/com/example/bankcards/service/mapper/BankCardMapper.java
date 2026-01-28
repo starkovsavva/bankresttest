@@ -34,7 +34,7 @@ public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
         return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 
-    // Дополнительные методы для специфических маппингов
+    
     @Named("bankCardSummary")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")

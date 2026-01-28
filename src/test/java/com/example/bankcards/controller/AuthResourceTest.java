@@ -31,10 +31,10 @@ import com.example.bankcards.exception.UserAlreadyExistsException;
 import com.example.bankcards.service.impl.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebMvcTest(value = AuthResource.class,
+@WebMvcTest(value = AuthController.class,
     excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityConfig.class))
 @AutoConfigureMockMvc(addFilters = false)
-class AuthResourceTest {
+class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
