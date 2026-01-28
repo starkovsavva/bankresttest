@@ -22,9 +22,9 @@
 ## Запуск проекта в Docker
 
 
-    ```bash
-    git clone https://github.com/starkovsavva/bankresttest.git
-    ```
+   ```bash
+   git clone https://github.com/starkovsavva/bankresttest.git
+   ```
 
 
    ```bash
