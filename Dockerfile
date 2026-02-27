@@ -8,7 +8,7 @@ WORKDIR /app
 COPY pom.xml .
 
 # Загрузка зависимостей
-RUN mvn dependency:install -DskipTests
+RUN mvn dependency:go-offline -DskipTests
 
 # Копирование исходного кода
 COPY src ./src

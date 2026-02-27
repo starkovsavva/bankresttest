@@ -7,6 +7,12 @@ import com.example.bankcards.entity.BankCard;
 import com.example.bankcards.entity.BankCardStatus;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.BadRequestException;
+import com.example.bankcards.exception.CardAccessDeniedException;
+import com.example.bankcards.exception.CardOperationException;
+import com.example.bankcards.exception.InsufficientFundsException;
+import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.exception.UserNotFoundException;
 import com.example.bankcards.repository.BankCardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.impl.BankCardServiceImpl;
@@ -136,7 +142,7 @@ class BankCardServiceTest {
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> bankCardService.save(request))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(UserNotFoundException.class)
                     .hasMessageContaining("User not found");
 
             verify(bankCardRepository, never()).save(any(BankCard.class));
@@ -157,7 +163,7 @@ class BankCardServiceTest {
             when(bankCardRepository.existsByCardNumberHash(anyString())).thenReturn(true);
 
             assertThatThrownBy(() -> bankCardService.save(request))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(BadRequestException.class)
                     .hasMessageContaining("Card number already exists");
 
             verify(bankCardRepository, never()).save(any(BankCard.class));
@@ -174,7 +180,7 @@ class BankCardServiceTest {
             );
 
             assertThatThrownBy(() -> bankCardService.save(request))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BadRequestException.class)
                     .hasMessageContaining("expiration date cannot be in the past");
         }
     }
@@ -218,7 +224,7 @@ class BankCardServiceTest {
             when(bankCardRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> bankCardService.findOne(999L))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Card not found");
         }
 
@@ -279,7 +285,7 @@ class BankCardServiceTest {
 
             when(bankCardRepository.findById(1L)).thenReturn(Optional.of(sourceCard));
             when(bankCardRepository.findById(2L)).thenReturn(Optional.of(destinationCard));
-            when(bankCardRepository.save(any(BankCard.class)))
+            when(bankCardRepository.saveAll(any(List.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             boolean result = bankCardService.transfer(request);
@@ -295,7 +301,7 @@ class BankCardServiceTest {
             TransferRequest request = new TransferRequest(1L, 1L, BigDecimal.valueOf(100));
 
             assertThatThrownBy(() -> bankCardService.transfer(request))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BadRequestException.class)
                     .hasMessageContaining("Cannot transfer to the same card");
         }
 
@@ -307,8 +313,8 @@ class BankCardServiceTest {
             when(bankCardRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> bankCardService.transfer(request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("Source card not found");
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Source card");
         }
 
         @Test
@@ -320,7 +326,7 @@ class BankCardServiceTest {
             when(bankCardRepository.findById(2L)).thenReturn(Optional.of(destinationCard));
 
             assertThatThrownBy(() -> bankCardService.transfer(request))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(InsufficientFundsException.class)
                     .hasMessageContaining("Insufficient funds");
         }
 
@@ -334,7 +340,7 @@ class BankCardServiceTest {
             when(bankCardRepository.findById(2L)).thenReturn(Optional.of(destinationCard));
 
             assertThatThrownBy(() -> bankCardService.transfer(request))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(CardOperationException.class)
                     .hasMessageContaining("Source card is not active");
         }
 
@@ -347,7 +353,7 @@ class BankCardServiceTest {
             when(bankCardRepository.existsByIdAndUserId(2L, 1L)).thenReturn(true);
             when(bankCardRepository.findById(1L)).thenReturn(Optional.of(sourceCard));
             when(bankCardRepository.findById(2L)).thenReturn(Optional.of(destinationCard));
-            when(bankCardRepository.save(any(BankCard.class)))
+            when(bankCardRepository.saveAll(any(List.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             boolean result = bankCardService.transferBetweenOwnCards(request, 1L);
@@ -364,7 +370,7 @@ class BankCardServiceTest {
             when(bankCardRepository.existsByIdAndUserId(2L, 1L)).thenReturn(false);
 
             assertThatThrownBy(() -> bankCardService.transferBetweenOwnCards(request, 1L))
-                    .isInstanceOf(SecurityException.class)
+                    .isInstanceOf(CardAccessDeniedException.class)
                     .hasMessageContaining("do not belong to the user");
         }
     }
@@ -395,7 +401,7 @@ class BankCardServiceTest {
             when(bankCardRepository.findByIdAndUserId(1L, 2L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> bankCardService.blockCard(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(CardAccessDeniedException.class)
                     .hasMessageContaining("Card not found or access denied");
         }
     }
@@ -421,7 +427,7 @@ class BankCardServiceTest {
             when(bankCardRepository.existsById(999L)).thenReturn(false);
 
             assertThatThrownBy(() -> bankCardService.delete(999L))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Card not found");
 
             verify(bankCardRepository, never()).deleteById(anyLong());

@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.JoinType;
 
 /**
- * Service for executing complex queries on BankCard entities using Criteria API.
+ * Сервис для выполнения сложных запросов по сущностям BankCard с использованием Criteria API.
  */
 @Slf4j
 @Service
@@ -44,7 +44,7 @@ public class BankCardQBServiceImpl extends QueryBuilderService<BankCard> impleme
     }
 
     /**
-     * Count entities matching the criteria.
+     * Подсчёт сущностей, соответствующих критериям.
      */
     public long countByCriteria(BankCardCriteria criteria) {
         log.debug("Count by criteria: {}", criteria);
@@ -54,7 +54,7 @@ public class BankCardQBServiceImpl extends QueryBuilderService<BankCard> impleme
     }
 
     /**
-     * Convert BankCardCriteria to a JPA Specification.
+     * Конвертация BankCardCriteria в JPA Specification.
      */
     private Specification<BankCard> createSpecification(BankCardCriteria criteria) {
         Specification<BankCard> specification = Specification.where(null);

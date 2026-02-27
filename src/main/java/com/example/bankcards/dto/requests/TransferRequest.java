@@ -16,10 +16,4 @@ public record TransferRequest(
         @Positive(message = "Amount must be positive")
         BigDecimal amount
 ) {
-    public TransferRequest {
-        // Compact constructor для дополнительной валидации
-        if (fromCardId != null && toCardId != null && fromCardId.equals(toCardId)) {
-            throw new IllegalArgumentException("Cannot transfer to the same card");
-        }
-    }
 }

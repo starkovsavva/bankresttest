@@ -22,8 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.bankcards.config.auth.JwtAuthFilter;
-import com.example.bankcards.config.auth.JwtAuthResponse;
+import com.example.bankcards.security.JwtAuthFilter;
+import com.example.bankcards.security.JwtAuthResponse;
 import com.example.bankcards.config.security.SecurityConfig;
 import com.example.bankcards.dto.UserSignInDto;
 import com.example.bankcards.dto.UserSignUpDto;

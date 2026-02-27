@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.bankcards.config.auth.JwtAuthFilter;
+import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.config.security.SecurityConfig;
 import com.example.bankcards.dto.BankCardDTO;
 import com.example.bankcards.dto.requests.CardCreateRequest;
@@ -175,14 +175,14 @@ class BankCardControllerTest {
     @WithMockUser(roles = "USER")
     void getCard_shouldReturnCard() throws Exception {
     authenticateUser(1L, Role.USER);
-        when(bankCardService.findOne(1L)).thenReturn(buildCardDto());
+        when(bankCardService.findOneForUser(1L, 1L)).thenReturn(buildCardDto());
 
-        mockMvc.perform(get("/api/cards/{id}", 1L))
+        mockMvc.perform(get(\"/api/cards/{id}\", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.cardHolderName").value("John Doe"));
+                .andExpect(jsonPath(\"$.id\").value(1))
+                .andExpect(jsonPath(\"$.cardHolderName\").value(\"John Doe\"));
 
-        verify(bankCardService).findOne(1L);
+        verify(bankCardService).findOneForUser(1L, 1L);
     }
 
     @Test

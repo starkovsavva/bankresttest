@@ -4,9 +4,9 @@ import com.example.bankcards.dto.BankCardDTO;
 import com.example.bankcards.dto.PageResponse;
 import com.example.bankcards.dto.requests.CardCreateRequest;
 import com.example.bankcards.dto.requests.TransferRequest;
-import com.example.bankcards.entity.BankCard;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.exception.BadRequestException;
+import com.example.bankcards.exception.UnauthorizedException;
 import com.example.bankcards.service.BankCardService;
 import com.example.bankcards.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,11 +43,7 @@ public class BankCardController {
     @PostMapping("/cards")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BankCardDTO> createCard(@Valid @RequestBody CardCreateRequest cardCreateRequest) throws URISyntaxException {
-        log.debug("REST request to save Card: {}", cardCreateRequest);
-
-        if (cardCreateRequest.cardNumber() == null) {
-            throw new BadRequestException("Card number must be present", ENTITY_NAME, "cardnumbernull");
-        }
+        log.debug("REST request to save Card");
 
         BankCardDTO result = bankCardService.save(cardCreateRequest);
         return ResponseEntity
@@ -96,7 +92,8 @@ public class BankCardController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BankCardDTO> getCard(@PathVariable Long id) {
         log.debug("REST request to get Card: {}", id);
-        BankCardDTO bankCardDTO = bankCardService.findOne(id);
+        Long userId = getCurrentUserId();
+        BankCardDTO bankCardDTO = bankCardService.findOneForUser(id, userId);
         return ResponseEntity.ok(bankCardDTO);
     }
 
@@ -136,6 +133,6 @@ public class BankCardController {
         if (authentication != null && authentication.getPrincipal() instanceof User user) {
             return user.getId();
         }
-        throw new IllegalStateException("User not authenticated");
+        throw new UnauthorizedException("User not authenticated");
     }
 }

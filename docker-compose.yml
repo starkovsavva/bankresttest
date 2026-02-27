@@ -22,23 +22,27 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bank-app
-    volumes:
-      - migration_data:/app/migrations  # Volume для миграций
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres  # ← Подключаемся к postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: bank_user
       SPRING_DATASOURCE_PASSWORD: bank_password
       SPRING_LIQUIBASE_ENABLED: "true"
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-256-bit-key}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me-in-production}
       LOGGING_LEVEL_LIQUIBASE: "ERROR"
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_BOOT_AUTOCONFIGURE_LIQUIBASE: "ERROR"
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
 volumes:
   postgres_data:
-  migration_data: # Volume для миграций

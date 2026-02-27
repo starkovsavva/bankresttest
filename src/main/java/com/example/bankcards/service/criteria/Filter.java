@@ -85,7 +85,7 @@ public class Filter<FIELD_TYPE> {
     public FIELD_TYPE getLessOrEqual() { return lessOrEqual; }
     public void setLessOrEqual(FIELD_TYPE lessOrEqual) { this.lessOrEqual = lessOrEqual; }
 
-    // === Utility methods ===
+    // === Вспомогательные методы ===
     public boolean isEmpty() {
         return equals == null && notEquals == null && in == null &&
                 notIn == null && contains == null && notContains == null &&

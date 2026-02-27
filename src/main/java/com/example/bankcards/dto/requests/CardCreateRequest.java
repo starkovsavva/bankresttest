@@ -16,5 +16,5 @@ public record CardCreateRequest(
         @NotNull(message = "Expiration date is required")
         LocalDateTime expirationDate,
 
-        Long targetUserId  // Optional: для админа, чтобы создать карту другому пользователю
+        Long targetUserId  // Опционально: для админа, чтобы создать карту другому пользователю
 ) {}

@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-version-column-to-bank-cards
+      author: user
+      changes:
+        - addColumn:
+            tableName: bank_cards
+            columns:
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueNumeric: 0

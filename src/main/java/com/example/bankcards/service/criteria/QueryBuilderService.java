@@ -14,31 +14,31 @@ import java.util.Collection;
 import java.util.function.Function;
 
 /**
- * Abstract base class for building JPA Specifications from Filter criteria.
- * Provides reusable methods for constructing type-safe queries.
+ * Абстрактный базовый класс для построения JPA Specification из критериев Filter.
+ * Предоставляет переиспользуемые методы для построения типобезопасных запросов.
  *
- * @param <E> the entity type
+ * @param <E> тип сущности
  */
 public abstract class QueryBuilderService<E> {
 
     /**
-     * Build a specification for a singular attribute using a filter.
+     * Построение спецификации для одиночного атрибута с использованием фильтра.
      */
     protected <X> Specification<E> buildSpecification(Filter<X> filter, SingularAttribute<? super E, X> field) {
         return buildSpecification(filter, root -> root.get(field));
     }
 
     /**
-     * Build a specification for a String attribute using a filter.
-     * Supports contains/notContains operations for String types.
+     * Построение спецификации для строкового атрибута с использованием фильтра.
+     * Поддерживает операции contains/notContains для строковых типов.
      */
     protected Specification<E> buildStringSpecification(Filter<String> filter, SingularAttribute<? super E, String> field) {
         return buildStringSpecification(filter, root -> root.get(field));
     }
 
     /**
-     * Build a specification for a Comparable attribute using a range filter.
-     * Supports greaterThan, lessThan, greaterOrEqual, lessOrEqual operations.
+     * Построение спецификации для атрибута типа Comparable с использованием диапазонного фильтра.
+     * Поддерживает операции greaterThan, lessThan, greaterOrEqual, lessOrEqual.
      */
     protected <X extends Comparable<? super X>> Specification<E> buildRangeSpecification(
             Filter<X> filter, SingularAttribute<? super E, X> field) {
@@ -46,7 +46,7 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Build a specification using a custom path function.
+     * Построение спецификации с использованием пользовательской функции пути.
      */
     @SuppressWarnings("unchecked")
     protected <X> Specification<E> buildSpecification(Filter<X> filter, Function<Root<E>, Expression<X>> pathFunction) {
@@ -73,7 +73,7 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Build a string specification with LIKE support.
+     * Построение строковой спецификации с поддержкой LIKE.
      */
     protected Specification<E> buildStringSpecification(Filter<String> filter, Function<Root<E>, Expression<String>> pathFunction) {
         if (filter == null) {
@@ -93,7 +93,7 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Build a range specification for comparable types.
+     * Построение диапазонной спецификации для типов Comparable.
      */
     protected <X extends Comparable<? super X>> Specification<E> buildRangeSpecification(
             Filter<X> filter, Function<Root<E>, Expression<X>> pathFunction) {
@@ -120,7 +120,7 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Build a specification for a reference entity using its ID.
+     * Построение спецификации для связанной сущности по её ID.
      */
     protected <X, Y> Specification<E> buildReferringEntitySpecification(
             Filter<X> filter,
@@ -130,7 +130,7 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Build a specification for a reference entity using join.
+     * Построение спецификации для связанной сущности с использованием join.
      */
     protected <Y> Specification<E> buildReferringEntitySpecification(
             Filter<Long> filter,
@@ -146,7 +146,7 @@ public abstract class QueryBuilderService<E> {
         };
     }
 
-    // === Private helper methods for building specifications ===
+    // === Приватные вспомогательные методы для построения спецификаций ===
 
     private <X> Specification<E> equalsSpecification(Function<Root<E>, Expression<X>> pathFunction, X value) {
         return (root, query, builder) -> builder.equal(pathFunction.apply(root), value);
@@ -207,14 +207,14 @@ public abstract class QueryBuilderService<E> {
     }
 
     /**
-     * Wrap a string for LIKE query with wildcards.
+     * Оборачивает строку для LIKE-запроса с подстановочными символами.
      */
     protected String wrapLikeQuery(String text) {
         return "%" + text.toUpperCase() + "%";
     }
 
     /**
-     * Create a distinct query to avoid duplicates when using joins.
+     * Создание distinct-запроса для избежания дубликатов при использовании join.
      */
     protected <X> Specification<E> distinct(boolean distinct) {
         return (root, query, builder) -> {

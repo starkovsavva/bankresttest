@@ -9,10 +9,10 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.util.List;
 
 /**
- * Contract for a generic dto to entity mapper.
+ * Контракт для универсального маппера DTO <-> Entity.
  *
- * @param <D> - DTO type parameter.
- * @param <E> - Entity type parameter.
+ * @param <D> — тип DTO.
+ * @param <E> — тип Entity.
  */
 
 public interface EntityMapper<D, E> {

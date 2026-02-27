@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
-import com.example.bankcards.entity.User;
+
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Data
@@ -28,21 +28,11 @@ public class UserSignUpDto {
 
 
     @Schema(description = "Пароль", example = "secret_password")
+    @NotBlank(message = "Пароль не должен быть пустым")
     @Size( min = 5, max = 255, message = "Длинна пароля должна быть не более 255 символов")
     private String password;
 
     public UserSignUpDto() {
 
     }
-
-    public User toUser(){
-        User user = new User();
-        user.setUsername(nickname);
-        user.setEmail(email);
-        user.setPassword(password);
-
-        return user;
-
-    }
-
 }

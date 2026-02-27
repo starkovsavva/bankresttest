@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.config.auth.JwtAuthResponse;
+import com.example.bankcards.security.JwtAuthResponse;
 import com.example.bankcards.dto.UserSignInDto;
 import com.example.bankcards.dto.UserSignUpDto;
 import com.example.bankcards.service.impl.AuthenticationService;

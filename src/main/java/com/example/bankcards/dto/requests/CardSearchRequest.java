@@ -19,10 +19,12 @@ public record CardSearchRequest(
         int size
 ) {
     public CardSearchRequest {
-        // default
-        if (page < 0) page = 0;
-        if (size <= 0) size = 20;
-        if (size > 100) size = 100;
+        if (page < 0) {
+            throw new IllegalArgumentException("Page number must not be negative");
+        }
+        if (size <= 0 || size > 100) {
+            throw new IllegalArgumentException("Page size must be between 1 and 100");
+        }
     }
 
 

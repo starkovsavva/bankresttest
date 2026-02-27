@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * DTO for {@link com.example.bankcards.entity.BankCard}
+ * DTO для {@link com.example.bankcards.entity.BankCard}
  */
 public record BankCardDTO(
         Long id,

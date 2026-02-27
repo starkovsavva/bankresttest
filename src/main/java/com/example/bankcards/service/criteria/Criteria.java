@@ -3,20 +3,20 @@ package com.example.bankcards.service.criteria;
 import java.io.Serializable;
 
 /**
- * Base interface for all criteria classes.
- * Provides a common contract for filter-based queries.
+ * Базовый интерфейс для всех классов критериев.
+ * Предоставляет общий контракт для запросов на основе фильтров.
  */
 public interface Criteria extends Serializable {
     
     /**
-     * Creates a copy of this criteria object.
-     * @return a new copy of the criteria
+     * Создаёт копию данного объекта критериев.
+     * @return новая копия критериев
      */
     Criteria copy();
     
     /**
-     * Checks if the criteria has no filters set.
-     * @return true if no filters are set
+     * Проверяет, не установлены ли фильтры в критериях.
+     * @return true, если фильтры не установлены
      */
     boolean isEmpty();
 }

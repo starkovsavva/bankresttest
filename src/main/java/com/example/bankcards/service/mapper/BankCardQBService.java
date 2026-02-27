@@ -6,16 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 /**
- * Query Builder Service for BankCard entities.
+ * Сервис построения запросов для сущностей BankCard.
  */
 public interface BankCardQBService {
 
     /**
-     * Find bank cards by criteria with pagination.
+     * Поиск банковских карт по критериям с пагинацией.
      *
-     * @param criteria The criteria which holds all the filters.
-     * @param pageable The pagination information.
-     * @return the list of matching BankCardDTOs.
+     * @param criteria критерии, содержащие все фильтры.
+     * @param pageable информация о пагинации.
+     * @return страница подходящих BankCardDTO.
      */
     Page<BankCardDTO> findByCriteria(BankCardCriteria criteria, Pageable pageable);
 }

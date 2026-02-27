@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
     @Mapping(target = "maskedCardNumber", source = "cardNumber", qualifiedByName = "maskCardNumber")
-    @Mapping(target = "userId", source = "id")
+    @Mapping(target = "userId", source = "user.id")
     BankCardDTO toDto(BankCard bankCard);
 
     @Mapping(target = "user", ignore = true)
@@ -34,7 +34,6 @@ public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
         return "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
     }
 
-    
     @Named("bankCardSummary")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
@@ -42,17 +41,11 @@ public interface BankCardMapper extends EntityMapper<BankCardDTO, BankCard> {
     @Mapping(target = "cardHolderName", source = "cardHolderName")
     @Mapping(target = "balance", source = "balance")
     @Mapping(target = "status", source = "status")
+    @Mapping(target = "userId", source = "user.id")
     BankCardDTO toDtoSummary(BankCard bankCard);
-
-//    @Named("bankCardSummarySet")
-//    default Page<BankCardDTO> toDtoSummarySet(BankCard bankCards) {
-//        return bankCards.stream().map(this::toDtoSummary).collect(Collectors.toSet());
-//    }
 
     @Named("toDtoSummaryPage")
     default Page<BankCardDTO> toDtoSummaryPage(Page<BankCard> bankCards) {
-      return bankCards.map(this::toDtoSummary);
-    };
-
-
+        return bankCards.map(this::toDtoSummary);
+    }
 }

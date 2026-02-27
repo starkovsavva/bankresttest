@@ -6,6 +6,7 @@ import com.example.bankcards.dto.requests.TransferRequest;
 import com.example.bankcards.entity.BankCardStatus;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.InsufficientFundsException;
 import com.example.bankcards.repository.BankCardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.BankCardService;
@@ -121,7 +122,7 @@ class BankCardIntegrationTest {
         BankCardDTO sourceCard = bankCardService.save(request1);
         BankCardDTO destCard = bankCardService.save(request2);
 
-        // Add balance to source card manually for test
+        // Вручную добавляем баланс на карту-источник для теста
         var source = bankCardRepository.findById(sourceCard.id()).orElseThrow();
         source.setBalance(BigDecimal.valueOf(1000));
         bankCardRepository.save(source);
@@ -206,7 +207,7 @@ class BankCardIntegrationTest {
         );
 
         assertThatThrownBy(() -> bankCardService.transfer(transferRequest))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(InsufficientFundsException.class)
                 .hasMessageContaining("Insufficient funds");
     }
 }

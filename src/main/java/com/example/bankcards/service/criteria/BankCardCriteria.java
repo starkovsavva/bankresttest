@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Criteria class for filtering BankCard entities.
- * Contains all the filters for bank card queries.
+ * Класс критериев для фильтрации сущностей BankCard.
+ * Содержит все фильтры для запросов по банковским картам.
  */
 @Getter
 @Setter

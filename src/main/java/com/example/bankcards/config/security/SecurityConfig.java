@@ -1,6 +1,6 @@
 package com.example.bankcards.config.security;
 
-import com.example.bankcards.config.auth.JwtAuthFilter;
+import com.example.bankcards.security.JwtAuthFilter;
 import com.example.bankcards.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

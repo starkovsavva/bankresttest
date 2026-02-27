@@ -5,9 +5,9 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 /**
- * Generic wrapper for paginated responses containing both content and pagination metadata.
+ * Обёртка для постраничных ответов, содержащая данные и метаинформацию о пагинации.
  *
- * @param <T> the type of elements in the page
+ * @param <T> тип элементов на странице
  */
 public record PageResponse<T>(
         List<T> content,
@@ -19,11 +19,11 @@ public record PageResponse<T>(
         boolean last
 ) {
     /**
-     * Creates a PageResponse from a Spring Data Page object.
+     * Создаёт PageResponse из объекта Spring Data Page.
      *
-     * @param page the Spring Data Page
-     * @param <T>  the element type
-     * @return PageResponse with pagination metadata
+     * @param page объект Spring Data Page
+     * @param <T>  тип элемента
+     * @return PageResponse с метаинформацией о пагинации
      */
     public static <T> PageResponse<T> of(Page<T> page) {
         return new PageResponse<>(
