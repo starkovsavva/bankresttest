@@ -21,7 +21,7 @@
 
 ## Запуск проекта в Docker
 
-
+cs
    ```bash
    git clone https://github.com/starkovsavva/bankresttest.git
    ```

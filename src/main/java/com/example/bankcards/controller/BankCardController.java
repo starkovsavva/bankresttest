@@ -1,6 +1,7 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.BankCardDTO;
+import com.example.bankcards.dto.PageResponse;
 import com.example.bankcards.dto.requests.CardCreateRequest;
 import com.example.bankcards.dto.requests.TransferRequest;
 import com.example.bankcards.entity.BankCard;
@@ -74,11 +75,11 @@ public class BankCardController {
     @Operation(summary = "Get all cards with pagination")
     @GetMapping("/cards")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<BankCardDTO>> getAllCards(@ParameterObject Pageable pageable) {
+    public ResponseEntity<PageResponse<BankCardDTO>> getAllCards(@ParameterObject Pageable pageable) {
         log.debug("REST request to get a page of Cards");
         Page<BankCardDTO> page = bankCardService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return ResponseEntity.ok().headers(headers).body(PageResponse.of(page));
     }
 
     @Operation(summary = "Delete a card by ID")
@@ -102,12 +103,12 @@ public class BankCardController {
     @Operation(summary = "Get current user's cards")
     @GetMapping("/my-cards")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<BankCardDTO>> getMyCards(@ParameterObject Pageable pageable) {
+    public ResponseEntity<PageResponse<BankCardDTO>> getMyCards(@ParameterObject Pageable pageable) {
         log.debug("REST request to get current user's Cards");
         Long userId = getCurrentUserId();
         Page<BankCardDTO> page = bankCardService.findByUserId(userId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return ResponseEntity.ok().headers(headers).body(page.getContent());
+        return ResponseEntity.ok().headers(headers).body(PageResponse.of(page));
     }
 
     @Operation(summary = "Transfer between user's own cards")
